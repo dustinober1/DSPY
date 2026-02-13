@@ -82,9 +82,9 @@ fi
 echo ""
 read -p "Download models now? (y/n) [n]: " download_models
 if [ "$download_models" = "y" ]; then
-    echo "Which models to download?"
-    echo "1) Small models only (Phi-2) - ~5 GB"
-    echo "2) All models - ~150+ GB"
+    echo "Which Ollama models to pull?"
+    echo "1) Default model only"
+    echo "2) Full bundle alias"
     read -p "Choice [1]: " model_choice
     
     if [ "$model_choice" = "2" ]; then
@@ -95,7 +95,7 @@ if [ "$download_models" = "y" ]; then
     echo "✓ Models downloaded"
 else
     echo "⏭ Skipping model download"
-    echo "   You can use API models or download later with: python setup_models.py"
+    echo "   You can pull later with: python setup_models.py --models lfm2.5-thinking:latest"
 fi
 
 # Final instructions

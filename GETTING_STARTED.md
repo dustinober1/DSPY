@@ -45,70 +45,52 @@ cp .env.example .env
 
 ## Configuration
 
-### 1. Set Up API Keys (if using API models)
+### 1. Configure Environment Variables
 
 Edit `.env` file:
 
 ```bash
-# For gated models like Llama-2
-HF_TOKEN=your_huggingface_token
+# Ollama defaults (optional overrides)
+OLLAMA_MODEL=lfm2.5-thinking:latest
+OLLAMA_API_BASE=http://localhost:11434
+OLLAMA_MAX_TOKENS=1024
+OLLAMA_TEMPERATURE=0.0
 
-# For API fallback (optional)
+# API fallback (optional)
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
-Get HuggingFace token from: https://huggingface.co/settings/tokens
-
 ### 2. Choose Your Model Backend
 
-You have three options:
+You have two practical options:
 
-#### Option A: Local Models (Best for cost, requires GPU)
+#### Option A: Local Ollama Models (Recommended)
 
 ```bash
-# Download Phi-2 (recommended for 16GB RAM)
-python setup_models.py --models phi-2
+# Pull the default model
+python setup_models.py
 
-# Or download all small models
-python setup_models.py --models all-small
+# Or pull a specific model
+python setup_models.py --models lfm2.5-thinking:latest
 ```
 
 Then in notebooks, use:
 ```python
-small_lm = dspy.HFModel(
-    model=SMALL_MODELS['phi-2'].model_path,
-    max_tokens=512
+small_lm = dspy.LM(
+    model="ollama/lfm2.5-thinking:latest",
+    api_base="http://localhost:11434",
+    api_key=None,
+    max_tokens=1024,
+    temperature=0.0,
 )
 ```
 
-#### Option B: vLLM Server (Fastest local inference)
-
-Start vLLM server:
-```bash
-python -m vllm.entrypoints.openai.api_server \
-    --model microsoft/phi-2 \
-    --dtype auto \
-    --max-model-len 2048
-```
+#### Option B: API Models (Easiest, costs money)
 
 In notebooks:
 ```python
-small_lm = dspy.HFClientVLLM(
-    model="microsoft/phi-2",
-    port=8000
-)
-```
-
-#### Option C: API Models (Easiest, costs money)
-
-In notebooks:
-```python
-# Use GPT-3.5 as "small" model
-small_lm = dspy.OpenAI(model='gpt-3.5-turbo', max_tokens=512)
-
-# Use GPT-4 as "large" model for comparison
-large_lm = dspy.OpenAI(model='gpt-4', max_tokens=512)
+small_lm = dspy.LM(model='openai/gpt-5-nano-2025-08-07', api_key=openai_key)
 ```
 
 ## Running Experiments
@@ -169,7 +151,7 @@ Complete local demonstration:
 
 ```bash
 # 1. Download models
-python setup_models.py --models all-small
+python setup_models.py
 
 # 2. Download datasets
 python data/gsm8k_loader.py
@@ -186,8 +168,9 @@ jupyter notebook
 Comprehensive benchmarking:
 
 ```bash
-# 1. Set up vLLM for speed
-# Start vLLM server (see Option B above)
+# 1. Ensure Ollama is running and model is available
+ollama list
+ollama pull lfm2.5-thinking:latest
 
 # 2. Run full evaluations
 python evaluate.py --task gsm8k --approach all --subset test --save-results
@@ -232,27 +215,17 @@ python evaluate.py --task hotpotqa --approach all --subset test --save-results
 # 1. Reduce batch size in evaluation
 evaluator = Evaluator(..., batch_size=1)
 
-# 2. Use smaller model
-small_lm = dspy.HFModel(
-    model="microsoft/phi-2",  # 2.7B parameters, fits in 16GB RAM
-    max_tokens=256
-)
+# 2. Use smaller generation budget
+small_lm = dspy.LM(model="ollama/lfm2.5-thinking:latest", max_tokens=256)
 
-# 3. Enable CPU offloading
-small_lm = dspy.HFModel(
-    model=model_path,
-    device_map="auto",
-    load_in_8bit=True  # Quantization
-)
-
-# 4. Fall back to API
+# 3. Fall back to API if local resources are constrained
 small_lm = dspy.OpenAI(model='gpt-3.5-turbo')
 ```
 
 ### Issue: Slow Inference
 
 **Solutions**:
-- Use vLLM server (10-20x faster)
+- Use a smaller Ollama model during iteration
 - Reduce max_tokens configuration
 - Use smaller eval_subset for testing
 - Consider paid API for experiments
@@ -299,7 +272,7 @@ After getting basic results:
 
 1. **Experiment with optimizers**: Try BootstrapRandomSearch and MIPRO
 2. **Tune hyperparameters**: Adjust max_demos, temperature, etc.
-3. **Try different models**: Compare Phi-2, TinyLlama, and larger models
+3. **Try different models**: Compare different Ollama model families
 4. **Test on more data**: Use full dev/test sets
 5. **Error analysis**: Inspect where models fail
 6. **Custom tasks**: Adapt to your own use cases
@@ -328,7 +301,7 @@ After getting basic results:
 |--------------|------|------|----------|
 | API + Small dataset | 30 min | $5-10 | Demo quality |
 | Local + Medium dataset | 2-3 hours | Free | Good results |
-| vLLM + Full dataset | 4-6 hours | Free | Best results |
+| Ollama + Full dataset | 4-6 hours | Free | Best results |
 | Production setup | 1 day | Free/Low | Publication quality |
 
 Happy experimenting! 🚀

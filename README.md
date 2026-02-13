@@ -1,10 +1,10 @@
 # DSPy Small-to-SOTA Model Demo
 
-Demonstrate how DSPy optimization can make small local models (2.7B parameters) achieve performance comparable to large SOTA models (70B+) on reasoning tasks.
+Demonstrate how DSPy optimization improves local-model reasoning performance on GSM8K and HotPotQA.
 
 ## 🎯 Project Goal
 
-Show that **Phi-2 + DSPy optimization** can reach **≥90% of Llama-70B performance** at **<5% of the cost** on:
+Show how **local Ollama models + DSPy optimization** can approach strong benchmark performance at lower infrastructure cost on:
 - **GSM8K**: Grade school math word problems (multi-step reasoning)
 - **HotPotQA**: Multi-hop question answering (information synthesis)
 
@@ -27,23 +27,25 @@ pip install -r requirements.txt
 # Copy environment template
 cp .env.example .env
 
-# Edit .env and add your tokens (required for gated models like Llama-2)
-# HF_TOKEN=your_huggingface_token_here
+# Optional: set Ollama/OpenAI overrides
+# OLLAMA_MODEL=lfm2.5-thinking:latest
+# OLLAMA_API_BASE=http://localhost:11434
+# OPENAI_API_KEY=your_openai_key
 ```
 
 ### 3. Download Models (Optional)
 
-For local inference, download models:
+For local inference, pull Ollama models:
 
 ```bash
-# Download small models (Phi-2 recommended)
-python setup_models.py --models all-small
+# Pull the default Ollama model from config/.env
+python setup_models.py
 
-# Or download all models including large ones (requires significant disk space)
-python setup_models.py --models all
+# Or pull a specific model
+python setup_models.py --models lfm2.5-thinking:latest
 ```
 
-**Alternative**: You can use API models (OpenAI/Anthropic) instead by updating the configuration in the notebooks.
+**Alternative**: You can use API models (OpenAI/Anthropic) by updating notebook model configuration.
 
 ### 4. Prepare Data
 
@@ -103,7 +105,7 @@ DSPY/
 ✅ **Multiple Baselines**: Zero-shot, manual few-shot, DSPy-optimized  
 ✅ **Multiple Optimizers**: BootstrapFewShot, BootstrapRandomSearch, MIPRO  
 ✅ **Two Challenging Tasks**: Math reasoning (GSM8K) + Multi-hop QA (HotPotQA)  
-✅ **Local Model Support**: Run entirely on local hardware with vLLM  
+✅ **Local Model Support**: Run entirely on local hardware with Ollama  
 ✅ **Comprehensive Analysis**: Error analysis, cost metrics, visualization  
 ✅ **Reproducible**: Seed control, caching, save/load optimized programs  
 
@@ -115,9 +117,9 @@ Based on the optimization approach:
 
 | Approach | Expected Accuracy | Notes |
 |----------|------------------|-------|
-| Zero-Shot (Phi-2) | ~20-30% | Minimal prompting |
-| Few-Shot Manual (Phi-2) | ~35-45% | 3-5 hand-crafted examples |
-| **DSPy Optimized** (Phi-2) | **~55-70%** | Automatic optimization |
+| Zero-Shot (Local Ollama Model) | ~20-30% | Minimal prompting |
+| Few-Shot Manual (Local Ollama Model) | ~35-45% | 3-5 hand-crafted examples |
+| **DSPy Optimized** (Local Ollama Model) | **~55-70%** | Automatic optimization |
 | Reference (Llama-70B) | ~80% | Published benchmark |
 
 **Goal Achievement**: ~70-90% of large model performance
@@ -126,9 +128,9 @@ Based on the optimization approach:
 
 | Approach | Expected F1 | Notes |
 |----------|-------------|-------|
-| Zero-Shot (Phi-2) | ~15-25% | No context guidance |
-| Few-Shot Manual (Phi-2) | ~30-40% | Manual examples |
-| **DSPy Optimized** (Phi-2) | **~45-60%** | With retrieval + reasoning |
+| Zero-Shot (Local Ollama Model) | ~15-25% | No context guidance |
+| Few-Shot Manual (Local Ollama Model) | ~30-40% | Manual examples |
+| **DSPy Optimized** (Local Ollama Model) | **~45-60%** | With retrieval + reasoning |
 | Reference (Llama-70B) | ~70% | Published benchmark |
 
 **Goal Achievement**: ~65-85% of large model performance
@@ -160,22 +162,23 @@ Based on the optimization approach:
 
 ## 🔧 Advanced Usage
 
-### Using vLLM for Fast Inference
+### Using Ollama Models
 
-vLLM dramatically speeds up local model inference:
+The project defaults to local Ollama inference:
 
 ```bash
-# Start vLLM server (in separate terminal)
-python -m vllm.entrypoints.openai.api_server \
-    --model microsoft/phi-2 \
-    --dtype auto \
-    --max-model-len 2048
+# Pull and start Ollama (in separate terminal if needed)
+ollama pull lfm2.5-thinking:latest
+# If Ollama app/service is not already running:
+ollama serve
 
-# Then update notebook to use vLLM client
-small_lm = dspy.HFClientVLLM(
-    model="microsoft/phi-2",
-    port=8000,
-    url="http://localhost"
+# Example DSPy LM config
+small_lm = dspy.LM(
+    model="ollama/lfm2.5-thinking:latest",
+    api_base="http://localhost:11434",
+    api_key=None,
+    max_tokens=1024,
+    temperature=0.0,
 )
 ```
 
@@ -234,13 +237,13 @@ optimized_program = optimizer.load(
 
 ### Out of Memory
 - Reduce batch sizes in config.py
-- Use smaller models (Phi-2 instead of Llama-7B)
-- Enable CPU offloading: `device_map="auto"`
+- Use a smaller local Ollama model
+- Reduce optimizer candidate counts / trainset size during iteration
 
 ### Slow Inference
-- Use vLLM server instead of direct HuggingFace
+- Use a smaller Ollama model for iteration
 - Reduce `max_tokens` in model config
-- Use API models for initial testing
+- Reduce evaluation subset size for fast feedback
 
 ### Import Errors
 - Ensure you're in the project root directory
@@ -283,8 +286,8 @@ MIT License - Feel free to use for learning and experimentation.
 ## 🙏 Acknowledgments
 
 - **DSPy Team** at Stanford for the incredible framework
-- **HuggingFace** for model hosting and datasets library
-- **Mistral AI** and **Meta** for open-source models
+- **Ollama** for local model serving
+- **HuggingFace Datasets** for benchmark data access
 
 ---
 

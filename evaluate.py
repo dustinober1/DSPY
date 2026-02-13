@@ -7,11 +7,16 @@ Usage:
     python evaluate.py --task hotpotqa --approach zero-shot --subset test
 """
 import argparse
-import sys
 from pathlib import Path
 
 import dspy
-from config import DATASET_CONFIGS, SMALL_MODELS, DEFAULT_SMALL_MODEL
+from config import (
+    DATASET_CONFIGS,
+    DEFAULT_OLLAMA_MODEL,
+    OLLAMA_API_BASE,
+    OLLAMA_MAX_TOKENS,
+    OLLAMA_TEMPERATURE,
+)
 from data import (
     prepare_gsm8k_splits,
     prepare_hotpotqa_splits,
@@ -46,8 +51,30 @@ def parse_args():
     )
     parser.add_argument(
         "--model",
-        default=DEFAULT_SMALL_MODEL,
-        help="Model to use",
+        default=DEFAULT_OLLAMA_MODEL,
+        help="Ollama model name, with or without 'ollama/' prefix",
+    )
+    parser.add_argument(
+        "--api-base",
+        default=OLLAMA_API_BASE,
+        help="Ollama API base URL",
+    )
+    parser.add_argument(
+        "--api-key",
+        default=None,
+        help="API key (typically not needed for local Ollama)",
+    )
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=OLLAMA_MAX_TOKENS,
+        help="Max tokens per generation",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=OLLAMA_TEMPERATURE,
+        help="Sampling temperature",
     )
     parser.add_argument(
         "--num-examples",
@@ -158,11 +185,14 @@ def main():
     
     # Configure model
     print(f"Configuring model: {args.model}")
-    model_config = SMALL_MODELS[args.model]
-    
-    # For simplicity, use HuggingFace model directly
-    # For faster inference, set up vLLM server separately
-    lm = dspy.HFModel(model=model_config.model_path, max_tokens=512)
+    model_name = args.model if "/" in args.model else f"ollama/{args.model}"
+    lm = dspy.LM(
+        model=model_name,
+        api_base=args.api_base,
+        api_key=args.api_key or None,
+        max_tokens=args.max_tokens,
+        temperature=args.temperature,
+    )
     dspy.settings.configure(lm=lm)
     
     # Determine tasks

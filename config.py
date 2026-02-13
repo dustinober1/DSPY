@@ -3,8 +3,6 @@ Configuration for DSPy Small-to-SOTA Model Demo
 """
 import os
 from pathlib import Path
-from typing import Optional
-from dataclasses import dataclass
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent
@@ -16,47 +14,6 @@ RESULTS_DIR = PROJECT_ROOT / "results"
 # Create directories if they don't exist
 for dir_path in [DATA_DIR, MODELS_DIR, CACHE_DIR, RESULTS_DIR]:
     dir_path.mkdir(exist_ok=True)
-
-
-@dataclass
-class ModelConfig:
-    """Configuration for a language model"""
-    name: str
-    model_path: str
-    max_tokens: int = 2048
-    temperature: float = 0.0
-    tensor_parallel_size: int = 1
-    gpu_memory_utilization: float = 0.9
-
-
-# Small model configurations (main demo models)
-SMALL_MODELS = {
-    "tinyllama": ModelConfig(
-        name="tinyllama-1.1b",
-        model_path="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        max_tokens=2048,
-    ),
-}
-
-# Reference "SOTA" model (for comparison - using published benchmarks if not available locally)
-LARGE_MODELS = {
-    "llama-70b": ModelConfig(
-        name="llama-2-70b-chat",
-        model_path="meta-llama/Llama-2-70b-chat-hf",
-        max_tokens=2048,
-        tensor_parallel_size=4,  # Requires multi-GPU
-    ),
-    "mixtral-8x7b": ModelConfig(
-        name="mixtral-8x7b-instruct",
-        model_path="mistralai/Mixtral-8x7B-Instruct-v0.1",
-        max_tokens=2048,
-        tensor_parallel_size=2,
-    ),
-}
-
-# Default models to use
-DEFAULT_SMALL_MODEL = "tinyllama"
-DEFAULT_LARGE_MODEL = "llama-70b"  # May use benchmark results instead of actual inference
 
 # Dataset configurations
 DATASET_CONFIGS = {
@@ -150,4 +107,9 @@ except ImportError:
 # API keys (optional - for fallback to API models)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-HF_TOKEN = os.getenv("HF_TOKEN")  # For gated models like Llama-2
+
+# Ollama defaults
+DEFAULT_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "lfm2.5-thinking:latest")
+OLLAMA_API_BASE = os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
+OLLAMA_MAX_TOKENS = int(os.getenv("OLLAMA_MAX_TOKENS", "1024"))
+OLLAMA_TEMPERATURE = float(os.getenv("OLLAMA_TEMPERATURE", "0.0"))

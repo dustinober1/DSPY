@@ -13,7 +13,7 @@ DSPY/
 ├── signatures.py               # DSPy task signatures
 ├── modules.py                  # DSPy reasoning modules
 ├── setup.sh                    # Automated setup script
-├── setup_models.py            # Model download utility
+├── setup_models.py            # Ollama model pull utility
 ├── evaluate.py                # CLI evaluation script
 │
 ├── data/                       # Dataset loaders
@@ -45,10 +45,10 @@ DSPY/
 ### Core Infrastructure ✅
 
 1. **Configuration System** ([config.py](config.py))
-   - Model configurations for Phi-2, TinyLlama, Llama-70B, Mixtral
+   - Ollama defaults via environment variables
    - Dataset configurations for GSM8K and HotPotQA
    - Optimizer hyperparameter presets
-   - Hardware detection and vLLM settings
+   - Hardware detection and local runtime settings
    - Environment variable management
 
 2. **DSPy Signatures** ([signatures.py](signatures.py))
@@ -136,7 +136,7 @@ DSPY/
 
 12. **Command-Line Tools** ✅
     - `setup.sh`: Automated environment setup
-    - `setup_models.py`: Model download utility
+    - `setup_models.py`: Ollama model pull utility
     - `evaluate.py`: Batch evaluation script
 
 ### Documentation ✅
@@ -165,8 +165,7 @@ DSPY/
 - MIPRO (state-of-the-art, experimental)
 
 ### 4. Flexible Model Support
-- Local models via HuggingFace Transformers
-- Fast inference via vLLM
+- Local models via Ollama
 - API models via OpenAI/Anthropic
 - Easy switching between backends
 
@@ -198,9 +197,9 @@ When run with recommended settings:
 
 ### GSM8K Performance
 ```
-Zero-Shot (Phi-2):     ~25% accuracy
-Few-Shot (Phi-2):      ~40% accuracy
-DSPy Optimized (Phi-2): ~60% accuracy
+Zero-Shot (Local Ollama):      ~25% accuracy
+Few-Shot (Local Ollama):       ~40% accuracy
+DSPy Optimized (Local Ollama): ~60% accuracy
 Reference (Llama-70B):      ~80% accuracy
 
 → DSPy bridges 78% of the gap from zero-shot to SOTA
@@ -208,9 +207,9 @@ Reference (Llama-70B):      ~80% accuracy
 
 ### HotPotQA Performance
 ```
-Zero-Shot (Phi-2):     ~20% F1
-Few-Shot (Phi-2):      ~35% F1
-DSPy Optimized (Phi-2): ~50% F1
+Zero-Shot (Local Ollama):      ~20% F1
+Few-Shot (Local Ollama):       ~35% F1
+DSPy Optimized (Local Ollama): ~50% F1
 Reference (Llama-70B):      ~70% F1
 
 → DSPy bridges 71% of the gap from zero-shot to SOTA
@@ -221,8 +220,8 @@ Reference (Llama-70B):      ~70% F1
 Approach              | Cost  | Accuracy | $/Point
 --------------------- | ----- | -------- | -------
 Llama-70B (4xA100)    | $100  | 80%      | $1.25
-Phi-2 Zero-Shot       | $5    | 25%      | $0.20
-Phi-2 + DSPy          | $8    | 60%      | $0.13
+Local Ollama Zero-Shot| $5    | 25%      | $0.20
+Local Ollama + DSPy   | $8    | 60%      | $0.13
 
 → DSPy achieves 75% of performance at 8% of cost
 ```
@@ -258,12 +257,12 @@ jupyter notebook
 
 ### Full Evaluation (2-3 hours)
 ```bash
-python setup_models.py --models all-small
+python setup_models.py
 python evaluate.py --task both --approach all --subset dev
 ```
 
 ### Production Deployment
-1. Set up vLLM server for fast inference
+1. Ensure Ollama is running and the target model is pulled
 2. Run full test set evaluations
 3. Analyze error patterns
 4. Tune hyperparameters
@@ -281,8 +280,8 @@ Want to adapt this to your needs?
 5. Create notebook
 
 ### Try Different Models
-1. Add config to `SMALL_MODELS` or `LARGE_MODELS`
-2. Update `setup_models.py` if needed
+1. Set `OLLAMA_MODEL` in `.env` or pass `--model` to `evaluate.py`
+2. Pull the model with `python setup_models.py --models <model-name>`
 3. Run experiments
 
 ### Experiment with Optimizers
@@ -342,8 +341,8 @@ This implementation successfully demonstrates:
 
 Built on:
 - **DSPy**: Stanford NLP Framework
-- **HuggingFace**: Models and datasets
-- **Mistral AI & Meta**: Open-source models
+- **Ollama**: Local model serving
+- **HuggingFace Datasets**: Dataset distribution
 
 ---
 
