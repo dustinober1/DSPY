@@ -83,7 +83,7 @@ echo ""
 read -p "Download models now? (y/n) [n]: " download_models
 if [ "$download_models" = "y" ]; then
     echo "Which models to download?"
-    echo "1) Small models only (Mistral-7B) - ~14 GB"
+    echo "1) Small models only (Phi-2) - ~5 GB"
     echo "2) All models - ~150+ GB"
     read -p "Choice [1]: " model_choice
     

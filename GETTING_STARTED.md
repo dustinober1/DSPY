@@ -67,8 +67,8 @@ You have three options:
 #### Option A: Local Models (Best for cost, requires GPU)
 
 ```bash
-# Download Mistral-7B (recommended)
-python setup_models.py --models mistral-7b
+# Download Phi-2 (recommended for 16GB RAM)
+python setup_models.py --models phi-2
 
 # Or download all small models
 python setup_models.py --models all-small
@@ -77,7 +77,7 @@ python setup_models.py --models all-small
 Then in notebooks, use:
 ```python
 small_lm = dspy.HFModel(
-    model=SMALL_MODELS['mistral-7b'].model_path,
+    model=SMALL_MODELS['phi-2'].model_path,
     max_tokens=512
 )
 ```
@@ -87,7 +87,7 @@ small_lm = dspy.HFModel(
 Start vLLM server:
 ```bash
 python -m vllm.entrypoints.openai.api_server \
-    --model mistralai/Mistral-7B-Instruct-v0.2 \
+    --model microsoft/phi-2 \
     --dtype auto \
     --max-model-len 2048
 ```
@@ -95,7 +95,7 @@ python -m vllm.entrypoints.openai.api_server \
 In notebooks:
 ```python
 small_lm = dspy.HFClientVLLM(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
+    model="microsoft/phi-2",
     port=8000
 )
 ```
@@ -234,7 +234,7 @@ evaluator = Evaluator(..., batch_size=1)
 
 # 2. Use smaller model
 small_lm = dspy.HFModel(
-    model="microsoft/phi-2",  # Smaller than Mistral-7B
+    model="microsoft/phi-2",  # 2.7B parameters, fits in 16GB RAM
     max_tokens=256
 )
 
@@ -299,7 +299,7 @@ After getting basic results:
 
 1. **Experiment with optimizers**: Try BootstrapRandomSearch and MIPRO
 2. **Tune hyperparameters**: Adjust max_demos, temperature, etc.
-3. **Try different models**: Compare Mistral, Llama, Phi models
+3. **Try different models**: Compare Phi-2, TinyLlama, and larger models
 4. **Test on more data**: Use full dev/test sets
 5. **Error analysis**: Inspect where models fail
 6. **Custom tasks**: Adapt to your own use cases

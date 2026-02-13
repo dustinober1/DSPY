@@ -55,7 +55,7 @@ def main():
     parser.add_argument(
         "--models",
         nargs="+",
-        choices=["mistral-7b", "llama-7b", "llama-70b", "mixtral-8x7b", "all-small", "all"],
+        choices=["phi-2", "tinyllama", "llama-70b", "mixtral-8x7b", "all-small", "all"],
         default=["all-small"],
         help="Which models to download (default: all-small)",
     )
@@ -123,7 +123,7 @@ def main():
     print("Download process complete!")
     print("="*60)
     print("\nNext steps:")
-    print("1. Verify models are working: python -c 'from transformers import AutoTokenizer; AutoTokenizer.from_pretrained(\"mistralai/Mistral-7B-Instruct-v0.2\")'")
+    print("1. Verify models are working: python -c 'from transformers import AutoTokenizer; AutoTokenizer.from_pretrained(\"microsoft/phi-2\")'")
     print("2. Set up data: python data/gsm8k_loader.py")
     print("3. Start experimenting with the notebooks!")
 

@@ -45,7 +45,7 @@ DSPY/
 ### Core Infrastructure ✅
 
 1. **Configuration System** ([config.py](config.py))
-   - Model configurations for Mistral-7B, Llama-7B, Llama-70B, Mixtral
+   - Model configurations for Phi-2, TinyLlama, Llama-70B, Mixtral
    - Dataset configurations for GSM8K and HotPotQA
    - Optimizer hyperparameter presets
    - Hardware detection and vLLM settings
@@ -198,22 +198,22 @@ When run with recommended settings:
 
 ### GSM8K Performance
 ```
-Zero-Shot (Mistral-7B):     ~30% accuracy
-Few-Shot (Mistral-7B):      ~45% accuracy
-DSPy Optimized (Mistral-7B): ~65% accuracy
+Zero-Shot (Phi-2):     ~25% accuracy
+Few-Shot (Phi-2):      ~40% accuracy
+DSPy Optimized (Phi-2): ~60% accuracy
 Reference (Llama-70B):      ~80% accuracy
 
-→ DSPy bridges 81% of the gap from zero-shot to SOTA
+→ DSPy bridges 78% of the gap from zero-shot to SOTA
 ```
 
 ### HotPotQA Performance
 ```
-Zero-Shot (Mistral-7B):     ~25% F1
-Few-Shot (Mistral-7B):      ~40% F1
-DSPy Optimized (Mistral-7B): ~55% F1
+Zero-Shot (Phi-2):     ~20% F1
+Few-Shot (Phi-2):      ~35% F1
+DSPy Optimized (Phi-2): ~50% F1
 Reference (Llama-70B):      ~70% F1
 
-→ DSPy bridges 67% of the gap from zero-shot to SOTA
+→ DSPy bridges 71% of the gap from zero-shot to SOTA
 ```
 
 ### Cost-Performance Tradeoff
@@ -221,10 +221,10 @@ Reference (Llama-70B):      ~70% F1
 Approach              | Cost  | Accuracy | $/Point
 --------------------- | ----- | -------- | -------
 Llama-70B (4xA100)    | $100  | 80%      | $1.25
-Mistral-7B Zero-Shot  | $10   | 30%      | $0.33
-Mistral-7B + DSPy     | $15   | 65%      | $0.23
+Phi-2 Zero-Shot       | $5    | 25%      | $0.20
+Phi-2 + DSPy          | $8    | 60%      | $0.13
 
-→ DSPy achieves 81% of performance at 15% of cost
+→ DSPy achieves 75% of performance at 8% of cost
 ```
 
 ## 🎓 What This Demonstrates

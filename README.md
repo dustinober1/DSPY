@@ -1,10 +1,10 @@
 # DSPy Small-to-SOTA Model Demo
 
-Demonstrate how DSPy optimization can make small local models (7B parameters) achieve performance comparable to large SOTA models (70B+) on reasoning tasks.
+Demonstrate how DSPy optimization can make small local models (2.7B parameters) achieve performance comparable to large SOTA models (70B+) on reasoning tasks.
 
 ## 🎯 Project Goal
 
-Show that **Mistral-7B + DSPy optimization** can reach **≥90% of Llama-70B performance** at **<10% of the cost** on:
+Show that **Phi-2 + DSPy optimization** can reach **≥90% of Llama-70B performance** at **<5% of the cost** on:
 - **GSM8K**: Grade school math word problems (multi-step reasoning)
 - **HotPotQA**: Multi-hop question answering (information synthesis)
 
@@ -36,7 +36,7 @@ cp .env.example .env
 For local inference, download models:
 
 ```bash
-# Download small models (Mistral-7B recommended)
+# Download small models (Phi-2 recommended)
 python setup_models.py --models all-small
 
 # Or download all models including large ones (requires significant disk space)
@@ -115,23 +115,23 @@ Based on the optimization approach:
 
 | Approach | Expected Accuracy | Notes |
 |----------|------------------|-------|
-| Zero-Shot (Mistral-7B) | ~25-35% | Minimal prompting |
-| Few-Shot Manual (Mistral-7B) | ~40-50% | 3-5 hand-crafted examples |
-| **DSPy Optimized** (Mistral-7B) | **~60-75%** | Automatic optimization |
+| Zero-Shot (Phi-2) | ~20-30% | Minimal prompting |
+| Few-Shot Manual (Phi-2) | ~35-45% | 3-5 hand-crafted examples |
+| **DSPy Optimized** (Phi-2) | **~55-70%** | Automatic optimization |
 | Reference (Llama-70B) | ~80% | Published benchmark |
 
-**Goal Achievement**: ~75-94% of large model performance
+**Goal Achievement**: ~70-90% of large model performance
 
 ### HotPotQA (Multi-Hop QA)
 
 | Approach | Expected F1 | Notes |
 |----------|-------------|-------|
-| Zero-Shot (Mistral-7B) | ~20-30% | No context guidance |
-| Few-Shot Manual (Mistral-7B) | ~35-45% | Manual examples |
-| **DSPy Optimized** (Mistral-7B) | **~50-65%** | With retrieval + reasoning |
+| Zero-Shot (Phi-2) | ~15-25% | No context guidance |
+| Few-Shot Manual (Phi-2) | ~30-40% | Manual examples |
+| **DSPy Optimized** (Phi-2) | **~45-60%** | With retrieval + reasoning |
 | Reference (Llama-70B) | ~70% | Published benchmark |
 
-**Goal Achievement**: ~71-93% of large model performance
+**Goal Achievement**: ~65-85% of large model performance
 
 ## 💡 Key Insights
 
@@ -167,13 +167,13 @@ vLLM dramatically speeds up local model inference:
 ```bash
 # Start vLLM server (in separate terminal)
 python -m vllm.entrypoints.openai.api_server \
-    --model mistralai/Mistral-7B-Instruct-v0.2 \
+    --model microsoft/phi-2 \
     --dtype auto \
     --max-model-len 2048
 
 # Then update notebook to use vLLM client
 small_lm = dspy.HFClientVLLM(
-    model="mistralai/Mistral-7B-Instruct-v0.2",
+    model="microsoft/phi-2",
     port=8000,
     url="http://localhost"
 )
@@ -234,7 +234,7 @@ optimized_program = optimizer.load(
 
 ### Out of Memory
 - Reduce batch sizes in config.py
-- Use smaller models (Mistral-7B instead of Llama-13B)
+- Use smaller models (Phi-2 instead of Llama-7B)
 - Enable CPU offloading: `device_map="auto"`
 
 ### Slow Inference

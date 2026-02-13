@@ -31,14 +31,14 @@ class ModelConfig:
 
 # Small model configurations (main demo models)
 SMALL_MODELS = {
-    "mistral-7b": ModelConfig(
-        name="mistral-7b-instruct",
-        model_path="mistralai/Mistral-7B-Instruct-v0.2",
+    "phi-2": ModelConfig(
+        name="phi-2",
+        model_path="microsoft/phi-2",
         max_tokens=2048,
     ),
-    "llama-7b": ModelConfig(
-        name="llama-2-7b-chat",
-        model_path="meta-llama/Llama-2-7b-chat-hf",
+    "tinyllama": ModelConfig(
+        name="tinyllama-1.1b",
+        model_path="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
         max_tokens=2048,
     ),
 }
@@ -60,7 +60,7 @@ LARGE_MODELS = {
 }
 
 # Default models to use
-DEFAULT_SMALL_MODEL = "mistral-7b"
+DEFAULT_SMALL_MODEL = "phi-2"
 DEFAULT_LARGE_MODEL = "llama-70b"  # May use benchmark results instead of actual inference
 
 # Dataset configurations
