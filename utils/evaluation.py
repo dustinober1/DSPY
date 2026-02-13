@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Callable, Optional
 from dataclasses import dataclass, asdict
 import dspy
 from tqdm import tqdm
+import concurrent.futures
 
 
 @dataclass
@@ -38,10 +39,45 @@ class Evaluator:
         metric_fn: Callable,
         show_progress: bool = True,
         verbose: bool = False,
+        max_concurrent: int = 1,
     ):
         self.metric_fn = metric_fn
         self.show_progress = show_progress
         self.verbose = verbose
+        self.max_concurrent = max_concurrent
+    
+    def _process_example(self, example):
+        """Process a single example and return (prediction, is_correct)"""
+        try:
+            # Run model
+            if hasattr(self.model, 'forward'):
+                # DSPy module
+                if hasattr(example, 'context'):
+                    # HotPotQA-style
+                    prediction = self.model.forward(
+                        question=example.question,
+                        context=example.context,
+                    )
+                else:
+                    # GSM8K-style
+                    prediction = self.model.forward(question=example.question)
+            else:
+                # Other callable
+                if hasattr(example, 'context'):
+                    prediction = self.model(question=example.question, context=example.context)
+                else:
+                    prediction = self.model(question=example.question)
+            
+            # Evaluate
+            score = self.metric_fn(example, prediction)
+            is_correct = score > 0.5
+            
+            return prediction, is_correct
+            
+        except Exception as e:
+            if self.verbose:
+                print(f"Error processing example: {e}")
+            return None, False
     
     def evaluate(
         self,
@@ -62,50 +98,36 @@ class Evaluator:
         Returns:
             EvaluationResult object
         """
+        self.model = model  # Store for _process_example
         correct = 0
         predictions = []
         start_time = time.time()
         
-        iterator = tqdm(examples, desc=f"Evaluating {model_name}") if self.show_progress else examples
-        
-        for example in iterator:
-            try:
-                # Run model
-                if hasattr(model, 'forward'):
-                    # DSPy module
-                    if hasattr(example, 'context'):
-                        # HotPotQA-style
-                        prediction = model.forward(
-                            question=example.question,
-                            context=example.context,
-                        )
-                    else:
-                        # GSM8K-style
-                        prediction = model.forward(question=example.question)
-                else:
-                    # Other callable
-                    if hasattr(example, 'context'):
-                        prediction = model(question=example.question, context=example.context)
-                    else:
-                        prediction = model(question=example.question)
-                
-                # Evaluate
-                score = self.metric_fn(example, prediction)
-                if score > 0.5:  # Consider correct if score > 0.5
-                    correct += 1
-                
+        if self.max_concurrent == 1:
+            # Sequential processing
+            iterator = tqdm(examples, desc=f"Evaluating {model_name}") if self.show_progress else examples
+            
+            for example in iterator:
+                prediction, is_correct = self._process_example(example)
                 predictions.append(prediction)
+                if is_correct:
+                    correct += 1
+        else:
+            # Concurrent processing
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrent) as executor:
+                if self.show_progress:
+                    with tqdm(total=len(examples), desc=f"Evaluating {model_name}") as pbar:
+                        results = []
+                        for result in executor.map(self._process_example, examples):
+                            results.append(result)
+                            pbar.update(1)
+                else:
+                    results = list(executor.map(self._process_example, examples))
                 
-                if self.verbose:
-                    print(f"\nExample: {example.question[:50]}...")
-                    pred_answer = prediction.answer if hasattr(prediction, 'answer') else str(prediction)
-                    print(f"Prediction: {pred_answer}")
-                    print(f"Correct: {example.answer}")
-                    print(f"Score: {score}")
-                
-            except Exception as e:
-                print(f"Error evaluating example: {e}")
-                predictions.append(None)
+                for prediction, is_correct in results:
+                    predictions.append(prediction)
+                    if is_correct:
+                        correct += 1
         
         end_time = time.time()
         total_time = end_time - start_time

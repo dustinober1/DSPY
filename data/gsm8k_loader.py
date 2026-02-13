@@ -15,8 +15,7 @@ from config import DATA_DIR, DATASET_CONFIGS
 
 class GSM8KExample(dspy.Example):
     """A GSM8K example with question and answer"""
-    def __init__(self, question: str, answer: str, reasoning: str = ""):
-        super().__init__(question=question, answer=answer, reasoning=reasoning)
+    pass
 
 
 def extract_numeric_answer(answer_text: str) -> str:
@@ -77,7 +76,7 @@ def load_gsm8k_split(
     split: str = "train",
     num_examples: Optional[int] = None,
     seed: int = 42,
-) -> List[GSM8KExample]:
+) -> List[dspy.Example]:
     """
     Load GSM8K dataset split and convert to DSPy examples.
     
@@ -87,7 +86,7 @@ def load_gsm8k_split(
         seed: Random seed for sampling
         
     Returns:
-        List of GSM8KExample objects
+        List of dspy.Example objects
     """
     print(f"Loading GSM8K {split} split...")
     
@@ -108,11 +107,11 @@ def load_gsm8k_split(
         numeric_answer = extract_numeric_answer(full_answer)
         reasoning_steps = extract_reasoning(full_answer)
         
-        example = GSM8KExample(
+        example = dspy.Example(
             question=question,
             answer=numeric_answer,
             reasoning=reasoning_steps,
-        )
+        ).with_inputs("question")
         examples.append(example)
     
     print(f"Loaded {len(examples)} examples from GSM8K {split}")
@@ -125,7 +124,7 @@ def prepare_gsm8k_splits(
     test_size: int = 100,
     seed: int = 42,
     save_dir: Optional[Path] = None,
-) -> Tuple[List[GSM8KExample], List[GSM8KExample], List[GSM8KExample]]:
+) -> Tuple[List[dspy.Example], List[dspy.Example], List[dspy.Example]]:
     """
     Prepare train/dev/test splits for GSM8K.
     
@@ -185,7 +184,7 @@ def prepare_gsm8k_splits(
     return train_examples, dev_examples, test_examples
 
 
-def gsm8k_metric(example: GSM8KExample, prediction: dspy.Prediction, trace=None) -> float:
+def gsm8k_metric(example: dspy.Example, prediction: dspy.Prediction, trace=None) -> float:
     """
     Metric function for DSPy optimization.
     Returns 1.0 if exact match, 0.0 otherwise.
@@ -198,7 +197,7 @@ def gsm8k_metric(example: GSM8KExample, prediction: dspy.Prediction, trace=None)
 
 
 def evaluate_gsm8k(
-    examples: List[GSM8KExample],
+    examples: List[dspy.Example],
     predictions: List[str],
 ) -> Dict[str, float]:
     """
@@ -223,7 +222,7 @@ def evaluate_gsm8k(
     }
 
 
-def show_example(example: GSM8KExample, prediction: Optional[str] = None):
+def show_example(example: dspy.Example, prediction: Optional[str] = None):
     """Pretty print a GSM8K example"""
     print("=" * 80)
     print("QUESTION:")

@@ -4,6 +4,7 @@ from .gsm8k_loader import (
     prepare_gsm8k_splits,
     gsm8k_metric,
     evaluate_gsm8k,
+    show_example,
     GSM8KExample,
 )
 from .hotpotqa_loader import (
@@ -19,6 +20,7 @@ __all__ = [
     "prepare_gsm8k_splits",
     "gsm8k_metric",
     "evaluate_gsm8k",
+    "show_example",
     "GSM8KExample",
     "load_hotpotqa_split",
     "prepare_hotpotqa_splits",

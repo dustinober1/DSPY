@@ -31,11 +31,6 @@ class ModelConfig:
 
 # Small model configurations (main demo models)
 SMALL_MODELS = {
-    "phi-2": ModelConfig(
-        name="phi-2",
-        model_path="microsoft/phi-2",
-        max_tokens=2048,
-    ),
     "tinyllama": ModelConfig(
         name="tinyllama-1.1b",
         model_path="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
@@ -60,7 +55,7 @@ LARGE_MODELS = {
 }
 
 # Default models to use
-DEFAULT_SMALL_MODEL = "phi-2"
+DEFAULT_SMALL_MODEL = "tinyllama"
 DEFAULT_LARGE_MODEL = "llama-70b"  # May use benchmark results instead of actual inference
 
 # Dataset configurations
